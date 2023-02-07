@@ -781,7 +781,8 @@ Signatur: %5$s</string>
     <string name="loading_details">lädt</string>
     <string name="site_plans">Lagepläne</string>
     <string name="interactive_map">Interaktive Karte</string>
-    <string name="open_location_in_other_app">Ort in anderer Anwendung öffnen</string>
+    <string name="open_in_maps">Maps öffnen</string>
+    <string name="share">Teilen</string>
     <string name="available_maps">Verfügbare Karten:</string>
     <string name="map">Karte</string>
     <string name="room_id">Raumkennung</string>
@@ -793,4 +794,9 @@ Signatur: %5$s</string>
     <string name="not_implemented_interactive_map">Interaktive Karte ist noch nicht implementiert. Sie können auf der NavigaTum-Website darauf zugreifen.</string>
     <string name="redirect">Umleiten</string>
 
+    // Lecture View
+    <string name="ongoing_until">Noch %1$s</string>
+    <string name="starts_now">Startet jetzt</string>
+    <string name="tomorrow_time">Morgen %1$s</string>
+    <string name="IN_capitalized">In</string>
 </resources>

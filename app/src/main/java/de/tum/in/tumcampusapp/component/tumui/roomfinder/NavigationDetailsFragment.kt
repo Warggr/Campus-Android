@@ -12,6 +12,7 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.preference.PreferenceManager
 import com.squareup.picasso.Picasso
 import com.zhuinden.fragmentviewbindingdelegatekt.viewBinding
 import de.tum.`in`.tumcampusapp.R
@@ -59,8 +60,11 @@ class NavigationDetailsFragment : BaseFragment<Unit>(
             handleDetailsLoading()
         }
 
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+        val lang = sharedPreferences.getString("language_preference", null) ?: "de"
+
         navigationEntityId?.let {
-            viewModel.loadNavigationDetails(navigationEntityId!!)
+            viewModel.loadNavigationDetails(navigationEntityId!!, lang)
         } ?: run {
             showLoadingError()
         }
@@ -85,11 +89,40 @@ class NavigationDetailsFragment : BaseFragment<Unit>(
         binding.locationName.text = navigationDetails.name
         binding.locationType.text = getCapitalizeType(navigationDetails.typeCommonName)
 
+        setShowParentListener(navigationDetails)
+
+        setupShareLocationButton(navigationDetails)
         setOpenInOtherAppBtnListener(navigationDetails)
 
         showNavigationDetailsProperties(navigationDetails)
 
         showAvailableMaps(navigationDetails)
+    }
+
+    private fun setShowParentListener(navigationDetails: NavigationDetails) {
+        val parentId = navigationDetails.getParentId()
+        parentId?.let {
+            binding.parentLocations.setOnClickListener {
+                val intent = Intent(requireContext(), NavigationDetailsActivity::class.java)
+                intent.putExtra(NAVIGATION_ENTITY_ID, parentId)
+                startActivity(intent)
+            }
+        }
+    }
+
+    private fun setupShareLocationButton(navigationDetails: NavigationDetails) {
+        val url = "https://nav.tum.de/view/${navigationDetails.id}"
+
+        binding.shareLocationBtn.setOnClickListener {
+            val sendIntent = Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_TEXT, url)
+                type = "text/plain"
+            }
+
+            val shareIntent = Intent.createChooser(sendIntent, null)
+            startActivity(shareIntent)
+        }
     }
 
     private fun setOpenInOtherAppBtnListener(navigationDetails: NavigationDetails) {
@@ -106,7 +139,7 @@ class NavigationDetailsFragment : BaseFragment<Unit>(
     private fun showNavigationDetailsProperties(navigationDetails: NavigationDetails) {
         navigationDetails.properties.forEach { property ->
             val propertyRow = NavigationPropertyRowBinding.inflate(layoutInflater, binding.propsList, true)
-            propertyRow.propertyName.text = getTranslationForPropertyTitle(property.title)
+            propertyRow.propertyName.text = property.title
             propertyRow.propertyValue.text = property.value
         }
     }
@@ -156,17 +189,6 @@ class NavigationDetailsFragment : BaseFragment<Unit>(
             .load(map.mapImgUrl)
             .transform(pointerDrawer)
             .into(binding.photoView)
-    }
-
-    private fun getTranslationForPropertyTitle(title: String): String {
-        return when (title) {
-            "Raumkennung" -> getString(R.string.room_id)
-            "Adresse" -> getString(R.string.address)
-            "Architekten-Name" -> getString(R.string.architect_name)
-            "Sitzplätze" -> getString(R.string.seats)
-            "Anzahl Räume" -> getString(R.string.number_of_rooms)
-            else -> title
-        }
     }
 
     private fun getCapitalizeType(type: String): String {
